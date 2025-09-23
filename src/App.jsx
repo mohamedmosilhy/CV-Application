@@ -9,21 +9,29 @@ function App() {
   const [color, setColor] = useState("#000");
 
   return (
-    <div className="App grid grid-cols-6 h-screen max-w-screen gap-6 p-5">
-      <div className="col-span-1">
-        <Controllers active={active} onChangeActive={setActive} />
+    <div className="App flex flex-col md:flex-row h-screen max-w-screen gap-6 p-5">
+      {/* Left side: Controllers + Content */}
+      <div className="w-full md:w-1/2 lg:w-1/2 flex flex-col lg:flex-row gap-6">
+        {/* Controllers */}
+        <div className="w-full lg:w-1/3">
+          <Controllers active={active} onChangeActive={setActive} />
+        </div>
+
+        {/* Content */}
+        <div className="w-full lg:w-2/3">
+          <Content
+            active={active}
+            layout={layout}
+            onChangeLayout={setLayout}
+            color={color}
+            onChangeColor={setColor}
+          />
+        </div>
       </div>
-      <div className="col-span-2">
-        <Content
-          active={active}
-          layout={layout}
-          onChangeLayout={setLayout}
-          color={color}
-          onChangeColor={setColor}
-        />
-      </div>
-      <div className="col-span-3">
-        <Template />
+
+      {/* Right side: Template */}
+      <div className="w-full md:w-1/2 lg:w-1/2">
+        <Template layout={layout} color={color} />
       </div>
     </div>
   );
