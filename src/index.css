@@ -3,8 +3,10 @@
 @theme {
   --font-body: Inter, sans-serif;
   --font-heading: Montserrat, sans-serif;
+  --color-background: oklch(92.8% 0.006 264.531);
+  --spacing-body: 16px;
 }
 
 body {
-  background-color: oklch(96.7% 0.003 264.542);
+  background-color: var(--color-background);
 }
