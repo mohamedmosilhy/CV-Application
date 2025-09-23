@@ -10,3 +10,27 @@
 body {
   background-color: var(--color-background);
 }
+
+input[type="color"] {
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 100%;
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  -ms-border-radius: 100%;
+  -o-border-radius: 100%;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 100%;
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  -ms-border-radius: 100%;
+  -o-border-radius: 100%;
+}
