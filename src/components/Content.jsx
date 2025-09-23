@@ -3,7 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faDownload } from "@fortawesome/free-solid-svg-icons";
 import Card from "./Card";
 
-const Content = ({ active, layout, onChangeLayout, color, onChangeColor }) => {
+const Content = ({
+  active,
+  layout,
+  onChangeLayout,
+  color,
+  onChangeColor,
+  handlePrint,
+}) => {
   const personalInfo = ["Full Name", "Email", "Phone Number", "Address"];
   const education = ["School", "Degree", "Start Date", "End Date", "Location"];
   const experience = [
@@ -24,9 +31,12 @@ const Content = ({ active, layout, onChangeLayout, color, onChangeColor }) => {
           Delete Resume
         </button>
 
-        <button className="flex items-center text-sm cursor-pointer gap-[3px] rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold">
+        <button
+          className="flex items-center text-sm cursor-pointer gap-[3px] rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold"
+          onClick={handlePrint}
+        >
           <FontAwesomeIcon icon={faDownload} />
-          Load Example
+          Download Resume
         </button>
       </div>
 
