@@ -10,6 +10,10 @@ const Content = ({
   color,
   onChangeColor,
   handlePrint,
+  personData,
+  addPersonalInfo,
+  addEducation,
+  addExperience,
 }) => {
   const personalInfo = ["Full Name", "Email", "Phone Number", "Address"];
   const education = ["School", "Degree", "Start Date", "End Date", "Location"];
@@ -43,9 +47,24 @@ const Content = ({
       {/* Resume Mode */}
       {active === "resume" && (
         <>
-          <Card list={personalInfo} title="Personal Info" />
-          <Card list={education} title="Education" />
-          <Card list={experience} title="Experience" />
+          <Card
+            list={personalInfo}
+            title="Personal Info"
+            personData={personData.personalInfo}
+            addPersonalInfo={addPersonalInfo}
+          />
+          <Card
+            list={education}
+            title="Education"
+            personData={personData.education}
+            addEducation={addEducation}
+          />
+          <Card
+            list={experience}
+            title="Experience"
+            personData={personData.experience}
+            addExperience={addExperience}
+          />
         </>
       )}
 

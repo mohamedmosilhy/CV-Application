@@ -5,7 +5,16 @@ import Template from "./components/Template";
 import { useReactToPrint } from "react-to-print";
 
 function App() {
+  const personalInfoInitial = {};
+
+  const educationInitial = [];
+
+  const experienceInitial = [];
+
   const [active, setActive] = useState("resume");
+  const [personalInfo, setPersonalInfo] = useState(personalInfoInitial);
+  const [education, setEducation] = useState(educationInitial);
+  const [experience, setExperience] = useState(experienceInitial);
   const [layout, setLayout] = useState("top");
   const [color, setColor] = useState("#000");
   const resumeRef = useRef();
@@ -14,6 +23,18 @@ function App() {
     contentRef: resumeRef,
     documentTitle: "resume",
   });
+
+  const addPersonalInfo = (newInfo) => {
+    setPersonalInfo(newInfo);
+  };
+
+  const addEducation = (newEducation) => {
+    setEducation((prevEducation) => [...prevEducation, newEducation]);
+  };
+
+  const addExperience = (newExperience) => {
+    setExperience((prevExperience) => [...prevExperience, newExperience]);
+  };
 
   return (
     <div className="App flex flex-col md:flex-row h-screen max-w-screen gap-6 p-5">
@@ -33,13 +54,30 @@ function App() {
             color={color}
             onChangeColor={setColor}
             handlePrint={handlePrint}
+            personData={{
+              personalInfo,
+              education,
+              experience,
+            }}
+            addPersonalInfo={addPersonalInfo}
+            addEducation={addEducation}
+            addExperience={addExperience}
           />
         </div>
       </div>
 
       {/* Right side: Template */}
       <div className="w-full md:w-1/2 lg:w-1/2 ">
-        <Template ref={resumeRef} layout={layout} color={color} />
+        <Template
+          ref={resumeRef}
+          layout={layout}
+          color={color}
+          personData={{
+            personalInfo,
+            education,
+            experience,
+          }}
+        />
       </div>
     </div>
   );
