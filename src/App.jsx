@@ -5,16 +5,10 @@ import Template from "./components/Template";
 import { useReactToPrint } from "react-to-print";
 
 function App() {
-  const personalInfoInitial = {};
-
-  const educationInitial = [];
-
-  const experienceInitial = [];
-
   const [active, setActive] = useState("resume");
-  const [personalInfo, setPersonalInfo] = useState(personalInfoInitial);
-  const [education, setEducation] = useState(educationInitial);
-  const [experience, setExperience] = useState(experienceInitial);
+  const [personalInfo, setPersonalInfo] = useState({});
+  const [education, setEducation] = useState([]);
+  const [experience, setExperience] = useState([]);
   const [layout, setLayout] = useState("top");
   const [color, setColor] = useState("#000");
   const resumeRef = useRef();
@@ -24,16 +18,39 @@ function App() {
     documentTitle: "resume",
   });
 
-  const addPersonalInfo = (newInfo) => {
+  // ✅ Personal Info just overwrites
+  const updatePersonalInfo = (newInfo) => {
     setPersonalInfo(newInfo);
   };
 
-  const addEducation = (newEducation) => {
-    setEducation((prevEducation) => [...prevEducation, newEducation]);
+  // ✅ Education handler (add / update / delete)
+  const updateEducation = (data, index, del = false) => {
+    setEducation((prev) => {
+      const copy = [...prev];
+      if (del && index !== null) {
+        copy.splice(index, 1); // delete
+      } else if (index !== null && data) {
+        copy[index] = data; // update
+      } else if (data) {
+        copy.push(data); // add new
+      }
+      return copy;
+    });
   };
 
-  const addExperience = (newExperience) => {
-    setExperience((prevExperience) => [...prevExperience, newExperience]);
+  // ✅ Experience handler (add / update / delete)
+  const updateExperience = (data, index, del = false) => {
+    setExperience((prev) => {
+      const copy = [...prev];
+      if (del && index !== null) {
+        copy.splice(index, 1);
+      } else if (index !== null && data) {
+        copy[index] = data;
+      } else if (data) {
+        copy.push(data);
+      }
+      return copy;
+    });
   };
 
   return (
@@ -59,15 +76,15 @@ function App() {
               education,
               experience,
             }}
-            addPersonalInfo={addPersonalInfo}
-            addEducation={addEducation}
-            addExperience={addExperience}
+            addPersonalInfo={updatePersonalInfo}
+            addEducation={updateEducation}
+            addExperience={updateExperience}
           />
         </div>
       </div>
 
       {/* Right side: Template */}
-      <div className="w-full md:w-1/2 lg:w-1/2 ">
+      <div className="w-full md:w-1/2 lg:w-1/2">
         <Template
           ref={resumeRef}
           layout={layout}

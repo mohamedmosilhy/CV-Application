@@ -13,6 +13,14 @@ const normalizeKey = (label) => {
     .join("");
 };
 
+// Utility: Ensure valid date format (YYYY-MM-DD)
+const normalizeDate = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().split("T")[0];
+};
+
 const Card = ({
   list,
   title,
@@ -26,12 +34,20 @@ const Card = ({
   const [selectedIndex, setSelectedIndex] = React.useState(null);
   const [formData, setFormData] = React.useState({}); // form state
 
+  // Keep formData in sync with parent data for Personal Info
+  React.useEffect(() => {
+    if (title === "Personal Info") {
+      setFormData(personData || {});
+    }
+  }, [personData, title]);
+
   // Handle input change
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const newData = { ...formData, [field]: value };
+    setFormData(newData);
 
     if (title === "Personal Info") {
-      addPersonalInfo({ ...formData, [field]: value });
+      addPersonalInfo(newData); // instant update
     }
   };
 
@@ -49,13 +65,15 @@ const Card = ({
 
   // Delete handler
   const handleDelete = () => {
+    if (selectedIndex === null) return; // new unsaved item
     if (title === "Education") {
-      addEducation(null, selectedIndex, true); // pass delete signal
+      addEducation(null, selectedIndex, true);
     } else if (title === "Experience") {
       addExperience(null, selectedIndex, true);
     }
     setShowDetails(false);
     setSelectedIndex(null);
+    setFormData({});
   };
 
   return (
@@ -147,6 +165,7 @@ const Card = ({
             const key = normalizeKey(item);
             const inputId = `${title}-${key}`;
             const isTextarea = item === "Description";
+            const isDate = item.includes("Date");
 
             return (
               <div key={index} className="mb-3 w-full">
@@ -178,12 +197,16 @@ const Card = ({
                         ? "email"
                         : item === "Phone Number"
                         ? "tel"
-                        : item.includes("Date")
+                        : isDate
                         ? "date"
                         : "text"
                     }
                     id={inputId}
-                    value={formData[key] || ""}
+                    value={
+                      isDate
+                        ? normalizeDate(formData[key])
+                        : formData[key] || ""
+                    }
                     onChange={(e) => handleChange(key, e.target.value)}
                     className="bg-background rounded w-full p-2 mt-1 text-sm border border-gray-300"
                   />
@@ -195,13 +218,15 @@ const Card = ({
         {/* Actions */}
         {title !== "Personal Info" && showDetails && (
           <div className="flex justify-between gap-3 m-2">
-            <button
-              className="flex items-center gap-[3px] text-red-500 text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold border-2 border-red-500 px-3 py-1"
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
-            <div className="flex gap-3">
+            {selectedIndex !== null && (
+              <button
+                className="flex items-center gap-[3px] text-red-500 text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold border-2 border-red-500 px-3 py-1"
+                onClick={handleDelete}
+              >
+                Delete
+              </button>
+            )}
+            <div className="flex gap-3 ml-auto">
               <button
                 className="flex items-center gap-[3px] text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold bg-blue-500 text-white px-3 py-1"
                 onClick={handleSave}
