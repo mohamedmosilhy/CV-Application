@@ -18,6 +18,12 @@ function App() {
     documentTitle: "resume",
   });
 
+  const resetResume = () => {
+    setPersonalInfo({});
+    setEducation([]);
+    setExperience([]);
+  };
+
   // ✅ Personal Info just overwrites
   const updatePersonalInfo = (newInfo) => {
     setPersonalInfo(newInfo);
@@ -79,6 +85,7 @@ function App() {
             addPersonalInfo={updatePersonalInfo}
             addEducation={updateEducation}
             addExperience={updateExperience}
+            resetResume={resetResume}
           />
         </div>
       </div>

@@ -39,6 +39,13 @@ const Card = ({
     if (title === "Personal Info") {
       setFormData(personData || {});
     }
+    if (title === "Education" || title === "Experience") {
+      if (!personData || personData.length === 0) {
+        setFormData({});
+        setShowDetails(false);
+        setSelectedIndex(null);
+      }
+    }
   }, [personData, title]);
 
   // Handle input change

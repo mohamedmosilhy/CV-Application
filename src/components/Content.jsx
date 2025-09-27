@@ -14,6 +14,7 @@ const Content = ({
   addPersonalInfo,
   addEducation,
   addExperience,
+  resetResume,
 }) => {
   const personalInfo = ["Full Name", "Email", "Phone Number", "Address"];
   const education = ["School", "Degree", "Start Date", "End Date", "Location"];
@@ -26,28 +27,13 @@ const Content = ({
     "Description",
   ];
 
-  // Define a "blank" personal info reset
-  const personalInfoReset = {
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-  };
-
-  // Delete Resume handler
-  const handleClearResume = () => {
-    addPersonalInfo(personalInfoReset);
-    addEducation([]);
-    addExperience([]);
-  };
-
   return (
     <div className="flex flex-col h-fit gap-5 rounded">
       {/* Action Buttons */}
       <div className="flex font-body h-fit justify-around rounded p-4 bg-white shadow-lg">
         <button
           className="flex items-center gap-[3px] text-red-500 text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold"
-          onClick={handleClearResume}
+          onClick={resetResume}
         >
           <FontAwesomeIcon icon={faTrash} className="text-red-500" />
           Delete Resume
