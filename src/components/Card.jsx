@@ -1,24 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faArrowUp, faAdd } from "@fortawesome/free-solid-svg-icons";
 
-// Utility: Convert "Start Date" -> "startDate"
-const normalizeKey = (label) => {
-  return label
+// Utilities
+const normalizeKey = (label) =>
+  label
     .toLowerCase()
     .split(" ")
     .map((word, idx) =>
       idx === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
     )
     .join("");
-};
 
-// Utility: Ensure valid date format (YYYY-MM-DD)
 const normalizeDate = (value) => {
   if (!value) return "";
   const d = new Date(value);
-  if (isNaN(d.getTime())) return "";
-  return d.toISOString().split("T")[0];
+  return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
 };
 
 const Card = ({
@@ -29,64 +26,128 @@ const Card = ({
   addEducation,
   addExperience,
 }) => {
-  const [expanded, setExpanded] = React.useState(false);
-  const [showDetails, setShowDetails] = React.useState(false);
-  const [selectedIndex, setSelectedIndex] = React.useState(null);
-  const [formData, setFormData] = React.useState({}); // form state
+  const [expanded, setExpanded] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [formData, setFormData] = useState({});
 
-  // Keep formData in sync with parent data for Personal Info
-  React.useEffect(() => {
+  // Sync form with parent data
+  useEffect(() => {
     if (title === "Personal Info") {
       setFormData(personData || {});
-    }
-    if (title === "Education" || title === "Experience") {
-      if (!personData || personData.length === 0) {
-        setFormData({});
-        setShowDetails(false);
-        setSelectedIndex(null);
-      }
+    } else if (
+      (title === "Education" || title === "Experience") &&
+      !personData?.length
+    ) {
+      setFormData({});
+      setShowDetails(false);
+      setSelectedIndex(null);
     }
   }, [personData, title]);
 
-  // Handle input change
   const handleChange = (field, value) => {
-    const newData = { ...formData, [field]: value };
-    setFormData(newData);
-
-    if (title === "Personal Info") {
-      addPersonalInfo(newData); // instant update
-    }
+    const updated = { ...formData, [field]: value };
+    setFormData(updated);
+    if (title === "Personal Info") addPersonalInfo(updated); // live update
   };
 
-  // Save handler (for Education + Experience)
   const handleSave = () => {
-    if (title === "Education") {
-      addEducation(formData, selectedIndex);
-    } else if (title === "Experience") {
-      addExperience(formData, selectedIndex);
-    }
+    if (title === "Education") addEducation(formData, selectedIndex);
+    if (title === "Experience") addExperience(formData, selectedIndex);
+
+    resetForm();
+  };
+
+  const handleDelete = () => {
+    if (selectedIndex === null) return;
+    if (title === "Education") addEducation(null, selectedIndex, true);
+    if (title === "Experience") addExperience(null, selectedIndex, true);
+
+    resetForm();
+  };
+
+  const resetForm = () => {
     setShowDetails(false);
     setSelectedIndex(null);
     setFormData({});
   };
 
-  // Delete handler
-  const handleDelete = () => {
-    if (selectedIndex === null) return; // new unsaved item
-    if (title === "Education") {
-      addEducation(null, selectedIndex, true);
-    } else if (title === "Experience") {
-      addExperience(null, selectedIndex, true);
-    }
-    setShowDetails(false);
-    setSelectedIndex(null);
-    setFormData({});
+  // Render list of existing entries (Education/Experience)
+  const renderListItems = () =>
+    personData?.map((item, idx) => {
+      const label =
+        title === "Education"
+          ? item.school || "Unnamed School"
+          : item.companyName || "Company";
+
+      return (
+        <div
+          key={idx}
+          className="font-body w-full px-3 py-2 rounded-xl shadow-sm border border-gray-200 bg-gray-50 
+            text-sm font-medium text-gray-800 hover:bg-gray-100 hover:shadow-md 
+            cursor-pointer transition-all duration-200"
+          onClick={() => {
+            setShowDetails(true);
+            setSelectedIndex(idx);
+            setFormData(item);
+          }}
+        >
+          {label}
+        </div>
+      );
+    });
+
+  // Render a form field
+  const renderField = (item, idx) => {
+    const key = normalizeKey(item);
+    const id = `${title}-${key}`;
+    const value = formData[key] || "";
+    const isTextarea = item === "Description";
+    const isDate = item.includes("Date");
+
+    return (
+      <div key={idx} className="mb-3 w-full">
+        <label htmlFor={id} className="font-body font-bold text-sm mb-2 block">
+          {item}
+        </label>
+
+        {isTextarea ? (
+          <textarea
+            id={id}
+            rows={4}
+            required
+            placeholder={`Enter ${item}`}
+            value={value}
+            onChange={(e) => handleChange(key, e.target.value)}
+            className="bg-background rounded w-full p-2 mt-1 text-sm resize-y border border-gray-300"
+          />
+        ) : (
+          <input
+            id={id}
+            required
+            type={
+              item === "Email"
+                ? "email"
+                : item === "Phone Number"
+                ? "tel"
+                : isDate
+                ? "date"
+                : "text"
+            }
+            placeholder={item === "Address" ? "City, Country" : `Enter ${item}`}
+            value={isDate ? normalizeDate(value) : value}
+            onChange={(e) => handleChange(key, e.target.value)}
+            className="bg-background rounded w-full p-2 mt-1 text-sm border border-gray-300"
+          />
+        )}
+      </div>
+    );
   };
 
   return (
-    <div className="flex flex-col h-fit rounded p-4 bg-white shadow-lg mb-4">
+    <section className="flex flex-col h-fit rounded p-4 bg-white shadow-lg mb-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+      <header className="flex justify-between items-center mb-4">
         <h2 className="font-heading text-xl border-b-2 w-fit flex items-center gap-2">
           <FontAwesomeIcon icon={faUser} className="text-gray-700" />
           {title}
@@ -95,65 +156,27 @@ const Card = ({
           <FontAwesomeIcon
             icon={faArrowUp}
             className={`text-gray-700 cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110 ${
-              expanded ? "rotate-180" : "rotate-0"
+              expanded ? "rotate-180" : ""
             }`}
             onClick={() => setExpanded(!expanded)}
           />
         )}
-      </div>
+      </header>
 
       {/* Content */}
       <div
         className={`transition-all duration-500 ease-in-out overflow-hidden ${
-          title === "Personal Info"
-            ? "opacity-100 max-h-screen"
-            : expanded
+          title === "Personal Info" || expanded
             ? "opacity-100 max-h-screen"
             : "opacity-0 max-h-0"
         }`}
       >
         {/* List view */}
         {!showDetails && title !== "Personal Info" && (
-          <div className="flex justify-center gap-3 flex-col items-center">
-            <div className="w-full flex justify-center gap-3 flex-col items-center">
-              {title === "Education" &&
-                personData?.map((edu, idx) => (
-                  <div
-                    key={idx}
-                    className="font-body w-full px-3 py-2 rounded-xl shadow-sm border border-gray-200 bg-gray-50 
-                      text-sm font-medium text-gray-800 hover:bg-gray-100 hover:shadow-md 
-                      cursor-pointer transition-all duration-200"
-                    onClick={() => {
-                      setShowDetails(true);
-                      setSelectedIndex(idx);
-                      setFormData(edu);
-                    }}
-                  >
-                    {edu.school || "Unnamed School"}
-                  </div>
-                ))}
-
-              {title === "Experience" &&
-                personData?.map((exp, idx) => (
-                  <div
-                    key={idx}
-                    className="font-body w-full px-3 py-2 rounded-xl shadow-sm border border-gray-200 bg-gray-50 
-                      text-sm font-medium text-gray-800 hover:bg-gray-100 hover:shadow-md 
-                      cursor-pointer transition-all duration-200"
-                    onClick={() => {
-                      setShowDetails(true);
-                      setSelectedIndex(idx);
-                      setFormData(exp);
-                    }}
-                  >
-                    {exp.companyName || "Company"}
-                  </div>
-                ))}
-            </div>
-
-            {/* Add Button */}
+          <div className="flex flex-col items-center gap-3">
+            {renderListItems()}
             <button
-              className="mb-4 px-3 py-1 bg-transparent cursor-pointer rounded-3xl text-center text-sm border border-gray-400 hover:bg-gray-100 transition"
+              className="mb-4 px-3 py-1 rounded-3xl text-sm border border-gray-400 hover:bg-gray-100 transition"
               onClick={() => {
                 setShowDetails(true);
                 setSelectedIndex(null);
@@ -168,85 +191,29 @@ const Card = ({
 
         {/* Form view */}
         {(showDetails || title === "Personal Info") &&
-          list.map((item, index) => {
-            const key = normalizeKey(item);
-            const inputId = `${title}-${key}`;
-            const isTextarea = item === "Description";
-            const isDate = item.includes("Date");
-
-            return (
-              <div key={index} className="mb-3 w-full">
-                <label
-                  htmlFor={inputId}
-                  className="font-body font-bold text-sm mb-2 block"
-                >
-                  {item}
-                </label>
-
-                {isTextarea ? (
-                  <textarea
-                    required
-                    placeholder={"Enter " + item}
-                    id={inputId}
-                    value={formData[key] || ""}
-                    onChange={(e) => handleChange(key, e.target.value)}
-                    className="bg-background rounded w-full p-2 mt-1 text-sm resize-y border border-gray-300"
-                    rows={4}
-                  />
-                ) : (
-                  <input
-                    required
-                    placeholder={
-                      item === "Address" ? "City, Country" : "Enter " + item
-                    }
-                    type={
-                      item === "Email"
-                        ? "email"
-                        : item === "Phone Number"
-                        ? "tel"
-                        : isDate
-                        ? "date"
-                        : "text"
-                    }
-                    id={inputId}
-                    value={
-                      isDate
-                        ? normalizeDate(formData[key])
-                        : formData[key] || ""
-                    }
-                    onChange={(e) => handleChange(key, e.target.value)}
-                    className="bg-background rounded w-full p-2 mt-1 text-sm border border-gray-300"
-                  />
-                )}
-              </div>
-            );
-          })}
+          list.map((item, idx) => renderField(item, idx))}
 
         {/* Actions */}
         {title !== "Personal Info" && showDetails && (
-          <div className="flex justify-between gap-3 m-2">
+          <div className="flex justify-between gap-3 mt-4">
             {selectedIndex !== null && (
               <button
-                className="flex items-center gap-[3px] text-red-500 text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold border-2 border-red-500 px-3 py-1"
                 onClick={handleDelete}
+                className="text-red-500 border-2 border-red-500 px-3 py-1 rounded text-sm transition-transform hover:scale-105"
               >
                 Delete
               </button>
             )}
             <div className="flex gap-3 ml-auto">
               <button
-                className="flex items-center gap-[3px] text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold bg-blue-500 text-white px-3 py-1"
                 onClick={handleSave}
+                className="bg-blue-500 text-white px-3 py-1 rounded text-sm transition-transform hover:scale-105"
               >
                 Save
               </button>
               <button
-                onClick={() => {
-                  setShowDetails(false);
-                  setSelectedIndex(null);
-                  setFormData({});
-                }}
-                className="flex items-center gap-[3px] text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold border-2 border-gray-700 px-3 py-1"
+                onClick={resetForm}
+                className="border-2 border-gray-700 px-3 py-1 rounded text-sm transition-transform hover:scale-105"
               >
                 Cancel
               </button>
@@ -254,7 +221,7 @@ const Card = ({
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

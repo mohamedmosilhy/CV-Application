@@ -3,6 +3,49 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faDownload } from "@fortawesome/free-solid-svg-icons";
 import Card from "./Card";
 
+// Constant form fields
+const personalInfo = ["Full Name", "Email", "Phone Number", "Address"];
+const education = ["School", "Degree", "Start Date", "End Date", "Location"];
+const experience = [
+  "Company Name",
+  "Position Title",
+  "Start Date",
+  "End Date",
+  "Location",
+  "Description",
+];
+
+// Layout preview options
+const layoutOptions = [
+  {
+    id: "top",
+    label: "Top",
+    classes: "flex-col",
+    sections: [
+      { className: "w-full h-1/2" },
+      { className: "w-full h-1/2 bg-white" },
+    ],
+  },
+  {
+    id: "left",
+    label: "Left",
+    classes: "flex-row",
+    sections: [
+      { className: "w-1/2 h-full" },
+      { className: "w-1/2 h-full bg-white" },
+    ],
+  },
+  {
+    id: "right",
+    label: "Right",
+    classes: "flex-row",
+    sections: [
+      { className: "w-1/2 h-full bg-white" },
+      { className: "w-1/2 h-full" },
+    ],
+  },
+];
+
 const Content = ({
   active,
   layout,
@@ -16,39 +59,28 @@ const Content = ({
   addExperience,
   resetResume,
 }) => {
-  const personalInfo = ["Full Name", "Email", "Phone Number", "Address"];
-  const education = ["School", "Degree", "Start Date", "End Date", "Location"];
-  const experience = [
-    "Company Name",
-    "Position Title",
-    "Start Date",
-    "End Date",
-    "Location",
-    "Description",
-  ];
-
   return (
     <div className="flex flex-col h-fit gap-5 rounded">
       {/* Action Buttons */}
-      <div className="flex font-body h-fit justify-around rounded p-4 bg-white shadow-lg">
+      <header className="flex justify-around items-center font-body h-fit rounded p-4 bg-white shadow-lg">
         <button
-          className="flex items-center gap-[3px] text-red-500 text-sm cursor-pointer rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold"
           onClick={resetResume}
+          className="flex items-center gap-2 text-sm text-red-500 transition-transform hover:scale-105 active:scale-95 hover:font-bold"
         >
-          <FontAwesomeIcon icon={faTrash} className="text-red-500" />
+          <FontAwesomeIcon icon={faTrash} />
           Delete Resume
         </button>
 
         <button
-          className="flex items-center text-sm cursor-pointer gap-[3px] rounded transition-transform duration-200 hover:scale-105 active:scale-95 hover:font-bold"
           onClick={handlePrint}
+          className="flex items-center gap-2 text-sm transition-transform hover:scale-105 active:scale-95 hover:font-bold"
         >
           <FontAwesomeIcon icon={faDownload} />
           Download Resume
         </button>
-      </div>
+      </header>
 
-      {/* Resume Mode */}
+      {/* Resume Info Mode */}
       {active === "resume" && (
         <>
           <Card
@@ -72,82 +104,58 @@ const Content = ({
         </>
       )}
 
-      {/* Settings Mode */}
+      {/* Appearance Mode */}
       {active !== "resume" && (
         <>
           {/* Layout Section */}
-          <div className="flex flex-col h-fit rounded p-4 bg-white shadow-lg mb-4">
-            <h2 className="font-heading text-xl mb-2">Layout</h2>
-            <div className="flex gap-4">
-              {/* Top */}
-              <div className="w-10 h-15 flex flex-col items-center justify-center hover:scale-105 transition">
-                <button
-                  onClick={() => onChangeLayout("top")}
-                  className={`w-full h-14 border rounded overflow-hidden flex flex-col ${
-                    layout === "top" ? "ring-1" : ""
-                  }`}
-                  style={{ ringColor: color }}
+          <section className="flex flex-col gap-4 rounded p-4 bg-white shadow-lg">
+            <h2 className="font-heading text-xl">Layout</h2>
+            <div className="flex gap-6">
+              {layoutOptions.map(({ id, label, classes, sections }) => (
+                <div
+                  key={id}
+                  className="w-10 flex flex-col items-center hover:scale-105 transition"
                 >
-                  <div
-                    className="w-full h-1/2"
-                    style={{ backgroundColor: color }}
-                  />
-                  <div className="w-full h-1/2 bg-white" />
-                </button>
-                <div className="text-sm mt-1">Top</div>
-              </div>
-
-              {/* Left */}
-              <div className="w-10 h-15 flex flex-col items-center justify-center hover:scale-105 transition">
-                <button
-                  onClick={() => onChangeLayout("left")}
-                  className={`w-full h-14 border rounded overflow-hidden flex flex-row ${
-                    layout === "left" ? "ring-1" : ""
-                  }`}
-                  style={{ ringColor: color }}
-                >
-                  <div
-                    className="w-1/2 h-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <div className="w-1/2 h-full bg-white" />
-                </button>
-                <div className="text-sm mt-1">Left</div>
-              </div>
-
-              {/* Right */}
-              <div className="w-10 h-15 flex flex-col items-center justify-center hover:scale-105 transition">
-                <button
-                  onClick={() => onChangeLayout("right")}
-                  className={`w-full h-14 border rounded overflow-hidden flex flex-row ${
-                    layout === "right" ? "ring-1" : ""
-                  }`}
-                  style={{ ringColor: color }}
-                >
-                  <div className="w-1/2 h-full bg-white" />
-                  <div
-                    className="w-1/2 h-full"
-                    style={{ backgroundColor: color }}
-                  />
-                </button>
-                <div className="text-sm mt-1">Right</div>
-              </div>
+                  <button
+                    onClick={() => onChangeLayout(id)}
+                    className={`w-full h-10 border rounded overflow-hidden flex ${classes} ${
+                      layout === id ? "ring-2" : ""
+                    }`}
+                    style={{ "--tw-ring-color": color }}
+                  >
+                    {sections.map((section, idx) => (
+                      <div
+                        key={idx}
+                        className={section.className}
+                        style={{
+                          backgroundColor: section.className.includes(
+                            "bg-white"
+                          )
+                            ? ""
+                            : color,
+                        }}
+                      />
+                    ))}
+                  </button>
+                  <span className="text-sm mt-1">{label}</span>
+                </div>
+              ))}
             </div>
-          </div>
+          </section>
 
           {/* Color Section */}
-          <div className="flex flex-col h-fit rounded p-4 bg-white shadow-lg mb-4">
-            <h2 className="font-heading text-xl mb-2">Color</h2>
-            <div className="flex items-center gap-3">
-              <span className="text-sm">Accent Color</span>
+          <section className="flex flex-col gap-3 rounded p-4 bg-white shadow-lg">
+            <h2 className="font-heading text-xl">Color</h2>
+            <label className="flex items-center gap-3 text-sm">
+              <span>Accent Color</span>
               <input
                 type="color"
                 value={color}
                 onChange={(e) => onChangeColor(e.target.value)}
-                className="w-10 h-10 p-0 border-0 cursor-pointer"
+                className="w-10 h-10 cursor-pointer border-0"
               />
-            </div>
-          </div>
+            </label>
+          </section>
         </>
       )}
     </div>

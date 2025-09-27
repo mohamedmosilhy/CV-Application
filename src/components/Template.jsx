@@ -6,53 +6,57 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const personData = {
+// ✅ Helper: Format date gracefully
+const formatDate = (value) => {
+  if (!value) return "";
+  if (/^\d{4}$/.test(value)) return value; // only year
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+};
+
+// ✅ Reusable Section wrapper
+const Section = ({ title, children }) => (
+  <div className="mb-6">
+    <h2 className="text-lg font-bold mb-3 border-b pb-1">{title}</h2>
+    {children}
+  </div>
+);
+
+// ✅ Reusable contact block
+const ContactBlock = ({ info, textColor, layout }) => (
+  <div
+    className={`text-sm flex flex-col gap-2 ${textColor} ${
+      layout === "top" ? "md:flex-row md:gap-4 md:justify-center" : ""
+    }`}
+  >
+    <p>
+      <FontAwesomeIcon icon={faEnvelope} /> {info.email || "Email"}
+    </p>
+    <p>
+      <FontAwesomeIcon icon={faPhone} /> {info.phoneNumber || "Phone"}
+    </p>
+    <p>
+      <FontAwesomeIcon icon={faLocationDot} /> {info.address || "Address"}
+    </p>
+  </div>
+);
+
+// ✅ Default sample data
+const defaultData = {
   personalInfo: {
     fullName: "John Doe",
-    email: "mohamed@gmail.com",
-    phoneNumber: "+1234567890",
-    address: "123 Main St, Anytown, USA",
+    email: "johndoe@email.com",
+    phoneNumber: "+123456789",
+    address: "123 Main St, Anytown",
   },
-  education: [
-    {
-      school: "University of Example",
-      degree: "Bachelor of Science in Computer Science",
-      startDate: "2015",
-      endDate: "2019",
-      location: "Example City",
-    },
-    {
-      school: "Tech Institute",
-      degree: "Certificate in Web Development",
-      startDate: "2014",
-      endDate: "2015",
-      location: "Tech Valley",
-    },
-  ],
-  experience: [
-    {
-      companyName: "Tech Solutions Inc.",
-      positionTitle: "Senior Software Engineer",
-      startDate: "2022",
-      endDate: "Present",
-      location: "Example City",
-      description:
-        "Lead development of scalable web applications using React and Node.js.",
-    },
-    {
-      companyName: "Digital Innovations LLC",
-      positionTitle: "Software Engineer",
-      startDate: "2019",
-      endDate: "2022",
-      location: "Tech Valley",
-      description: "Developed web applications using React and Node.js.",
-    },
-  ],
+  education: [],
+  experience: [],
 };
 
 const Template = React.forwardRef(
-  ({ layout = "top", color = "#000000", personData: propPersonData }, ref) => {
-    const data = propPersonData || personData;
+  ({ layout = "top", color = "#000000", personData }, ref) => {
+    const data = personData || defaultData;
 
     const isLight = (hex) => {
       const r = parseInt(hex.slice(1, 3), 16);
@@ -63,6 +67,56 @@ const Template = React.forwardRef(
 
     const textColor = isLight(color) ? "text-black" : "text-white";
 
+    // ✅ EXPERIENCE section
+    const renderExperience = () => (
+      <Section title="EXPERIENCE">
+        {data.experience.map((exp, i) => (
+          <div key={i} className="mb-4">
+            <div className="flex justify-between">
+              <div>
+                <h3 className="font-semibold">
+                  {exp.positionTitle || "Job Title"}
+                </h3>
+                <p className="text-gray-700">{exp.companyName || "Company"}</p>
+              </div>
+              <div className="text-right text-sm text-gray-600">
+                <p>
+                  {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
+                </p>
+                <p>{exp.location}</p>
+              </div>
+            </div>
+            {exp.description && (
+              <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
+            )}
+          </div>
+        ))}
+      </Section>
+    );
+
+    // ✅ EDUCATION section
+    const renderEducation = () => (
+      <Section title="EDUCATION">
+        {data.education.map((edu, i) => (
+          <div key={i} className="mb-3">
+            <div className="flex justify-between">
+              <div>
+                <h3 className="font-semibold">{edu.degree || "Degree"}</h3>
+                <p className="text-gray-700">{edu.school || "School"}</p>
+              </div>
+              <div className="text-right text-sm text-gray-600">
+                <p>
+                  {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                </p>
+                <p>{edu.location}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </Section>
+    );
+
+    // ✅ Layout: TOP
     if (layout === "top") {
       return (
         <div ref={ref} className="bg-white rounded shadow-lg max-w-2xl">
@@ -74,171 +128,75 @@ const Template = React.forwardRef(
               {data.personalInfo.fullName}
             </h1>
             <div className="flex justify-center gap-4 text-sm">
-              <span>
-                <FontAwesomeIcon icon={faEnvelope} /> {data.personalInfo.email}
-              </span>
-              <span>
-                <FontAwesomeIcon icon={faPhone} />{" "}
-                {data.personalInfo.phoneNumber}
-              </span>
-              <span>
-                <FontAwesomeIcon icon={faLocationDot} />{" "}
-                {data.personalInfo.address}
-              </span>
+              <ContactBlock
+                info={data.personalInfo}
+                textColor={textColor}
+                layout={layout}
+              />
             </div>
           </div>
 
           <div className="p-6 text-black">
-            <h2 className="text-lg font-bold mb-3 border-b pb-1">EXPERIENCE</h2>
-            {data.experience.map((exp, i) => (
-              <div key={i} className="mb-4">
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-semibold">{exp.positionTitle}</h3>
-                    <p className="text-gray-700">{exp.companyName}</p>
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <p>
-                      {exp.startDate} - {exp.endDate}
-                    </p>
-                    <p>{exp.location}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
-              </div>
-            ))}
-
-            <h2 className="text-lg font-bold mb-3 border-b pb-1 mt-6">
-              EDUCATION
-            </h2>
-            {data.education.map((edu, i) => (
-              <div key={i} className="mb-3">
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-semibold">{edu.degree}</h3>
-                    <p className="text-gray-700">{edu.school}</p>
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <p>
-                      {edu.startDate} - {edu.endDate}
-                    </p>
-                    <p>{edu.location}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {renderExperience()}
+            {renderEducation()}
           </div>
         </div>
       );
     }
 
+    // ✅ Layout: LEFT
     if (layout === "left") {
       return (
         <div ref={ref} className="flex bg-white rounded shadow-lg max-w-4xl">
           <div
-            className={`w-fit p-6 ${textColor}`}
+            className={`w-1/3 p-6 ${textColor}`}
             style={{ backgroundColor: color }}
           >
             <h1 className="text-xl font-bold mb-4">
               {data.personalInfo.fullName}
             </h1>
-            <div className="text-sm flex flex-col gap-2">
-              <p>
-                <FontAwesomeIcon icon={faEnvelope} /> {data.personalInfo.email}
-              </p>
-              <p>
-                <FontAwesomeIcon icon={faPhone} />{" "}
-                {data.personalInfo.phoneNumber}
-              </p>
-              <p>
-                <FontAwesomeIcon icon={faLocationDot} />{" "}
-                {data.personalInfo.address}
-              </p>
-            </div>
+            <ContactBlock
+              info={data.personalInfo}
+              textColor={textColor}
+              layout={layout}
+            />
           </div>
 
           <div className="w-2/3 p-6 text-black">
-            <h2 className="text-lg font-bold mb-3 border-b pb-1">EXPERIENCE</h2>
-            {data.experience.map((exp, i) => (
-              <div key={i} className="mb-4">
-                <h3 className="font-semibold">{exp.positionTitle}</h3>
-                <p className="text-gray-700">
-                  {exp.companyName} | {exp.startDate} - {exp.endDate} |{" "}
-                  {exp.location}
-                </p>
-                <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
-              </div>
-            ))}
-
-            <h2 className="text-lg font-bold mb-3 border-b pb-1 mt-6">
-              EDUCATION
-            </h2>
-            {data.education.map((edu, i) => (
-              <div key={i} className="mb-3">
-                <h3 className="font-semibold">{edu.degree}</h3>
-                <p className="text-gray-700">
-                  {edu.school} | {edu.startDate} - {edu.endDate} |{" "}
-                  {edu.location}
-                </p>
-              </div>
-            ))}
+            {renderExperience()}
+            {renderEducation()}
           </div>
         </div>
       );
     }
 
+    // ✅ Layout: RIGHT
     if (layout === "right") {
       return (
         <div ref={ref} className="flex bg-white rounded shadow-lg max-w-4xl">
           <div className="w-2/3 p-6 text-black">
-            <h2 className="text-lg font-bold mb-3 border-b pb-1">EXPERIENCE</h2>
-            {data.experience.map((exp, i) => (
-              <div key={i} className="mb-4">
-                <h3 className="font-semibold">{exp.positionTitle}</h3>
-                <p className="text-gray-700">
-                  {exp.companyName} | {exp.startDate} - {exp.endDate}
-                </p>
-                <p className="text-sm text-gray-700 mt-1">{exp.description}</p>
-              </div>
-            ))}
-
-            <h2 className="text-lg font-bold mb-3 border-b pb-1 mt-6">
-              EDUCATION
-            </h2>
-            {data.education.map((edu, i) => (
-              <div key={i} className="mb-3">
-                <h3 className="font-semibold">{edu.degree}</h3>
-                <p className="text-gray-700">
-                  {edu.school} | {edu.startDate} - {edu.endDate}
-                </p>
-              </div>
-            ))}
+            {renderExperience()}
+            {renderEducation()}
           </div>
 
           <div
-            className={`w-fit p-6 ${textColor}`}
+            className={`w-1/3 p-6 ${textColor}`}
             style={{ backgroundColor: color }}
           >
             <h1 className="text-xl font-bold mb-4">
               {data.personalInfo.fullName}
             </h1>
-            <div className="space-y-2 text-sm">
-              <p>
-                <FontAwesomeIcon icon={faEnvelope} /> {data.personalInfo.email}
-              </p>
-              <p>
-                <FontAwesomeIcon icon={faPhone} />{" "}
-                {data.personalInfo.phoneNumber}
-              </p>
-              <p>
-                <FontAwesomeIcon icon={faLocationDot} />{" "}
-                {data.personalInfo.address}
-              </p>
-            </div>
+            <ContactBlock
+              info={data.personalInfo}
+              textColor={textColor}
+              layout={layout}
+            />
           </div>
         </div>
       );
     }
+
+    return null;
   }
 );
 

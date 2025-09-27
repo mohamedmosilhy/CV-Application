@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import Controllers from "./components/Controllers";
 import Content from "./components/Content";
 import Template from "./components/Template";
@@ -11,58 +11,55 @@ function App() {
   const [experience, setExperience] = useState([]);
   const [layout, setLayout] = useState("top");
   const [color, setColor] = useState("#000");
+
   const resumeRef = useRef();
 
+  // 🖨️ Print resume
   const handlePrint = useReactToPrint({
     contentRef: resumeRef,
     documentTitle: "resume",
   });
 
-  const resetResume = () => {
+  // ♻️ Reset all resume data
+  const resetResume = useCallback(() => {
     setPersonalInfo({});
     setEducation([]);
     setExperience([]);
-  };
+  }, []);
 
-  // ✅ Personal Info just overwrites
-  const updatePersonalInfo = (newInfo) => {
+  // ✍️ Update personal info
+  const updatePersonalInfo = useCallback((newInfo) => {
     setPersonalInfo(newInfo);
-  };
+  }, []);
 
-  // ✅ Education handler (add / update / delete)
-  const updateEducation = (data, index, del = false) => {
-    setEducation((prev) => {
-      const copy = [...prev];
-      if (del && index !== null) {
-        copy.splice(index, 1); // delete
-      } else if (index !== null && data) {
-        copy[index] = data; // update
-      } else if (data) {
-        copy.push(data); // add new
-      }
-      return copy;
-    });
-  };
+  // 🔄 Generic array updater (add, update, delete)
+  const updateList = useCallback((setState) => {
+    return (data, index = null, del = false) => {
+      setState((prev) => {
+        const copy = [...prev];
 
-  // ✅ Experience handler (add / update / delete)
-  const updateExperience = (data, index, del = false) => {
-    setExperience((prev) => {
-      const copy = [...prev];
-      if (del && index !== null) {
-        copy.splice(index, 1);
-      } else if (index !== null && data) {
-        copy[index] = data;
-      } else if (data) {
-        copy.push(data);
-      }
-      return copy;
-    });
-  };
+        if (del && index !== null) {
+          copy.splice(index, 1); // delete
+        } else if (index !== null && data) {
+          copy[index] = data; // update
+        } else if (data) {
+          copy.push(data); // add new
+        }
+
+        return copy;
+      });
+    };
+  }, []);
+
+  const updateEducation = updateList(setEducation);
+  const updateExperience = updateList(setExperience);
+
+  const personData = { personalInfo, education, experience };
 
   return (
     <div className="App flex flex-col md:flex-row h-screen max-w-screen gap-6 p-5">
       {/* Left side: Controllers + Content */}
-      <div className="w-full md:w-1/2 lg:w-1/2 flex flex-col lg:flex-row gap-6">
+      <div className="w-full md:w-1/2 flex flex-col lg:flex-row gap-6">
         {/* Controllers */}
         <div className="w-full lg:w-1/3">
           <Controllers active={active} onChangeActive={setActive} />
@@ -77,11 +74,7 @@ function App() {
             color={color}
             onChangeColor={setColor}
             handlePrint={handlePrint}
-            personData={{
-              personalInfo,
-              education,
-              experience,
-            }}
+            personData={personData}
             addPersonalInfo={updatePersonalInfo}
             addEducation={updateEducation}
             addExperience={updateExperience}
@@ -91,16 +84,12 @@ function App() {
       </div>
 
       {/* Right side: Template */}
-      <div className="w-full md:w-1/2 lg:w-1/2">
+      <div className="w-full md:w-1/2">
         <Template
           ref={resumeRef}
           layout={layout}
           color={color}
-          personData={{
-            personalInfo,
-            education,
-            experience,
-          }}
+          personData={personData}
         />
       </div>
     </div>
